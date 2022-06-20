@@ -1,10 +1,13 @@
 package ru.netology.repository;
 
+import org.springframework.stereotype.Repository;
 import ru.netology.model.Post;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+
+@Repository
 public class PostRepository {
     private List<Post> list = new LinkedList<>();
     private long idCount = 1;
