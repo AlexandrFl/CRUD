@@ -15,7 +15,7 @@ public class MainServlet extends HttpServlet {
     @Override
     public void init() {
         final var context = new AnnotationConfigApplicationContext(JavaConfig.class);
-        new Thread(() -> controller = context.getBean(PostController.class)).start();
+        controller = context.getBean(PostController.class);
     }
 
     @Override
