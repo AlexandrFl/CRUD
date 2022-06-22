@@ -37,13 +37,18 @@ public class MainServlet extends HttpServlet {
                 }
             }
             if (path.matches("/api/posts/\\d+")) {
-                final var id = Long.parseLong(path.substring(path.lastIndexOf("/") + 1));
-                if (method.equals(methods.GET.toString())) {
-                    controller.getById(id, resp);
-                    return;
-                } else if (method.equals(methods.DELETE.toString())) {
-                    controller.removeById(id, resp);
-                    return;
+                try {
+                    final var id = Long.parseLong(path.substring(path.lastIndexOf("/") + 1));
+                    if (method.equals(methods.GET.toString())) {
+                        controller.getById(id, resp);
+                        return;
+                    } else if (method.equals(methods.DELETE.toString())) {
+                        controller.removeById(id, resp);
+                        return;
+                    }
+                } catch (Exception exception) {
+                    exception.printStackTrace();
+                    resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 }
             }
             resp.setStatus(HttpServletResponse.SC_NOT_FOUND);

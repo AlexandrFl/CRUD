@@ -1,24 +1,26 @@
 package ru.netology.repository;
 
+import ru.netology.exception.NotFoundException;
 import ru.netology.model.Post;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
+
 public class PostRepository {
-    private List<Post> list = new LinkedList<>();
-    private long idCount = 1;
+    private ConcurrentHashMap<Long, Post> list = new ConcurrentHashMap<>();
+    private AtomicLong idCount = new AtomicLong(1);
 
     public List<Post> all() {
-        return list;
+        return new LinkedList<>(list.values());
     }
 
     public Optional<Post> getById(long id) {
         if (!list.isEmpty()) {
-            for (Post post : list) {
-                if (post.getId() == id) {
-                    return Optional.of(post);
-                }
+            if (list.containsKey(id)) {
+                return Optional.of(list.get(id));
             }
         }
         return Optional.empty();
@@ -27,23 +29,27 @@ public class PostRepository {
 
     public Post save(Post post) {
         if (post.getId() == 0) {
-            post.setId(idCount++);
-            list.add(post);
+            while (list.containsKey(idCount.get())) {
+                idCount.incrementAndGet();
+            }
+            post.setId(idCount.get());
+            list.put(post.getId(), post);
             return post;
         }
-        for (Post posts : list) {
-            if (posts.getId() == post.getId()) {
-                posts.setId(post.getId());
-                posts.setContent(post.getContent());
-                return posts;
-            }
+        if (list.containsKey(post.getId())) {
+            Post changingPost = list.get(post.getId());
+            changingPost.setContent(post.getContent());
+            return changingPost;
         }
-        post.setId(idCount++);
-        list.add(post);
+        list.put(post.getId(), post);
         return post;
     }
 
     public void removeById(long id) {
-        list.removeIf(posts -> posts.getId() == id);
+        if (list.containsKey(id)) {
+            list.remove(id);
+        } else {
+            throw new NotFoundException();
+        }
     }
 }
